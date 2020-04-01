@@ -3,6 +3,7 @@
 mkdir matic && cd matic
 git clone https://github.com/sanchaymittal/mexa-sdk.git
 git clone https://github.com/sanchaymittal/txsign.git
+cd txsign
 npm install
 npm start
 ```
