@@ -24,7 +24,7 @@ function App() {
     name: "MetaToken",
     version: "1",
     chainId: "15001",
-    verifyingContract: "0xc766a047613e308121f5233a0d3df385aafc3f29"
+    verifyingContract: "0x569f9AC554216B926975F7dEd9Bd4F8b33BD3e3c"
   };
   // const rpcURL = ;
   // const web3 = new Web3(rpcURL);
@@ -146,7 +146,7 @@ function App() {
     const accounts = await web3.eth.getAccounts();
 
     let userAddress = accounts[0];
-    const contract = new getWeb3.eth.Contract(abi2, metaTokenAddress);
+    const contract = new web3.eth.Contract(abi2, metaTokenAddress);
     let nonce = await contract.methods.getNonce(userAddress).call();
     let functionSignature = contract.methods
       .transfer(recipient, amount)
@@ -168,34 +168,48 @@ function App() {
     });
     console.log(domainData);
     console.log();
-  web3.currentProvider.send(
-    {
-      jsonrpc: "2.0",
-      id: 999999999999,
-      method: "eth_signTypedData_v4",
-      params: [userAddress, dataToSign]
-    },
-    function(error, response) {
-      console.info(`User signature is ${response.result}`);
-      let { r, s, v } = getSignatureParameters(response.result);
-      console.log(userAddress);
-      console.log(JSON.stringify(message));
-      console.log(message);
-      console.log(getSignatureParameters(response.result));
+    web3.currentProvider.send(
+      {
+        jsonrpc: "2.0",
+        id: 999999999999,
+        method: "eth_signTypedData_v4",
+        params: [userAddress, dataToSign]
+      },
+      function(error, response) {
+        console.info(`User signature is ${response.result}`);
+        let { r, s, v } = getSignatureParameters(response.result);
+        console.log(userAddress);
+        console.log(JSON.stringify(message));
+        console.log(message);
+        console.log(getSignatureParameters(response.result));
 
-      const recovered = sigUtil.recoverTypedSignature_v4({
-        data: JSON.parse(dataToSign),
-        sig: response.result
-      });
-      console.log(`Recovered ${recovered}`);
-      let tx = contract.methods
-        .executeMetaTransaction(userAddress, functionSignature, r, s, v)
-        .send({
-          from: userAddress
+        const recovered = sigUtil.recoverTypedSignature_v4({
+          data: JSON.parse(dataToSign),
+          sig: response.result
         });
-    }
-  );
-  }
+        console.log(`Recovered ${recovered}`);
+        let tx = contract.methods
+          .executeMetaTransaction(userAddress, functionSignature, r, s, v)
+          .send({
+            from: userAddress
+          });
+        console.log(tx);
+      }
+    );
+  };
+
+  const normalTransfer = async () => {
+    const amount = "1000000000000000000";
+    const recipient = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5";
+    const metaTokenAddress = "0x569f9AC554216B926975F7dEd9Bd4F8b33BD3e3c";
+    const accounts = await web3.eth.getAccounts();
+
+    let userAddress = accounts[0];
+    const contract = new web3.eth.Contract(abi2, metaTokenAddress);
+    let functionSignature = await contract.methods
+      .transfer(recipient, amount)
+      .send({ from: userAddress });
+  };
 
   const getSignatureParameters = signature => {
     if (!web3.utils.isHexStrict(signature)) {
@@ -234,9 +248,9 @@ function App() {
             Increase Counter by 1
           </button>
           <div>Transfer Token</div>
-          {/* <button onClick={() => approve()} size="small">
-            Approve
-          </button> */}
+          <button onClick={() => normalTransfer()} size="small">
+            Normal Transfer
+          </button>
           <button onClick={() => transfer()} size="small">
             Transfer
           </button>
