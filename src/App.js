@@ -1,7 +1,8 @@
 // client/src/App.js
 import React, { useState, useEffect, useCallback } from "react";
 import Biconomy from "@biconomy/mexa";
-import abi2 from "./MTToken.json";
+import abi from "./MTToken.json";
+import counterJSON from "./SignTest.json";
 let sigUtil = require("eth-sig-util");
 
 function App() {
@@ -23,8 +24,8 @@ function App() {
   let domainData = {
     name: "MetaToken",
     version: "1",
-    chainId: "15001",
-    verifyingContract: "0x569f9AC554216B926975F7dEd9Bd4F8b33BD3e3c"
+    chainId: "3",
+    verifyingContract: "0x398da9088fecAe7C38CE76d98b09d08c9aD38B2E"
   };
   // const rpcURL = ;
   // const web3 = new Web3(rpcURL);
@@ -54,51 +55,23 @@ function App() {
       // Handle error while initializing mexa
     });
 
-  const counterJSON = [
-    {
-      constant: false,
-      inputs: [],
-      name: "increase",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function"
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "value",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256"
-        }
-      ],
-      payable: false,
-      stateMutability: "view",
-      type: "function"
-    }
-  ];
-
-  const signTransaction = async from => {
-    const data = "HI you are incrementing thevalue";
-    const receipt = await web3.eth.sign(data, from, function(error, result) {
-      if (!error) console.log(JSON.stringify(result));
-      else console.error(error);
-    });
-    return receipt;
-  };
-
   const [counterInstance, setCounterInstance] = useState(undefined);
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [count, setCount] = useState(0);
+  const metaTokenAddress = "0x398da9088fecAe7C38CE76d98b09d08c9aD38B2E";
+  const contract = new getWeb3.eth.Contract(abi, metaTokenAddress);
+  const amount = "1000000000000000000";
+  const recipient = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5";
+  const account = async () => {
+    const accounts = await web3.eth.getAccounts();
+    setSelectedAddress(accounts);
+  };
 
   if (!counterInstance) {
     const contractAddress = "0xc766a047613e308121f5233a0d3df385aafc3f29";
     const instance = new getWeb3.eth.Contract(counterJSON, contractAddress);
     setCounterInstance(instance);
   }
-
-  const [count, setCount] = useState(0);
 
   const getCount = useCallback(async () => {
     if (counterInstance) {
@@ -111,46 +84,54 @@ function App() {
 
   useEffect(() => {
     getCount();
-  }, [counterInstance, getCount]);
+  }, [counterInstance, getCount, account]);
 
   const increase = async () => {
     const accounts = await web3.eth.getAccounts();
-    // await signTransaction(accounts[0]).then( async() => {
-    await counterInstance.methods.increase().send({ from: accounts[0] });
-    // })
+    await signTransaction(accounts[0]).then(async () => {
+      await counterInstance.methods.increase().send({ from: accounts[0] });
+    });
     getCount();
   };
 
-  // const approve = async () => {
-  //   const amount = "1000000000000000000"
-  //   const metaTokenAddress = "0x81f419dd0990AbB4bc32aCF5982e702cB9A0163C"
-  //   const accounts = await web3.eth.getAccounts();
-  //   console.log(accounts);
-  //   const metaToken = new getWeb3.eth.Contract(abi, metaTokenAddress);
-  //   await metaToken.methods.metaApprove(accounts[1], amount).send({ from: accounts[0] });
-  // }
-
-  // const transfer = async () => {
-  //   const amount = "1000000000000000000"
-  //   const accounts = await web3.eth.getAccounts();
-  //   const metaTokenAddress = "0x81f419dd0990AbB4bc32aCF5982e702cB9A0163C"
-  //   const metaToken = new getWeb3.eth.Contract(abi, metaTokenAddress);
-  //   const recipient = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5"
-  //   await metaToken.methods.metaTransferFrom(accounts[0],recipient, amount).send({ from: accounts[0] });
-  // }
-
-  const transfer = async () => {
-    const amount = "1000000000000000000";
-    const recipient = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5";
-    const metaTokenAddress = "0x569f9AC554216B926975F7dEd9Bd4F8b33BD3e3c";
+  const normalTransfer = async () => {
     const accounts = await web3.eth.getAccounts();
-
     let userAddress = accounts[0];
-    const contract = new web3.eth.Contract(abi2, metaTokenAddress);
-    let nonce = await contract.methods.getNonce(userAddress).call();
-    let functionSignature = contract.methods
+    const contractTest = new web3.eth.Contract(abi, metaTokenAddress);
+    await contractTest.methods
       .transfer(recipient, amount)
+      .send({ from: userAddress });
+  };
+
+  const metaTransfer = async () => {
+    let functionSignature = contract.methods
+      .metaTransfer(recipient, amount)
       .encodeABI();
+    executeMetaTransaction(functionSignature);
+  };
+
+  const metaApprove = async () => {
+    const accounts = await web3.eth.getAccounts();
+    let userAddress = accounts[0];
+    let functionSignature = contract.methods
+      .metaApprove(userAddress, amount)
+      .encodeABI();
+    executeMetaTransaction(functionSignature);
+  };
+
+  const metaTransferFrom = async () => {
+    const accounts = await web3.eth.getAccounts();
+    let userAddress = accounts[0];
+    let functionSignature = contract.methods
+      .metaTransferFrom(userAddress, recipient, amount)
+      .encodeABI();
+    executeMetaTransaction(functionSignature);
+  };
+
+  const executeMetaTransaction = async functionSignature => {
+    const accounts = await web3.eth.getAccounts();
+    let userAddress = accounts[0];
+    let nonce = await contract.methods.getNonce(userAddress).call();
 
     let message = {};
     message.nonce = parseInt(nonce);
@@ -168,7 +149,8 @@ function App() {
     });
     console.log(domainData);
     console.log();
-    web3.currentProvider.send(
+    console.log(userAddress)
+    web3.eth.currentProvider.send(
       {
         jsonrpc: "2.0",
         id: 999999999999,
@@ -198,17 +180,13 @@ function App() {
     );
   };
 
-  const normalTransfer = async () => {
-    const amount = "1000000000000000000";
-    const recipient = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5";
-    const metaTokenAddress = "0x569f9AC554216B926975F7dEd9Bd4F8b33BD3e3c";
-    const accounts = await web3.eth.getAccounts();
-
-    let userAddress = accounts[0];
-    const contract = new web3.eth.Contract(abi2, metaTokenAddress);
-    let functionSignature = await contract.methods
-      .transfer(recipient, amount)
-      .send({ from: userAddress });
+  const signTransaction = async from => {
+    const data = "Hi you are incrementing thevalue";
+    const receipt = await web3.eth.sign(data, from, function(error, result) {
+      if (!error) console.log(JSON.stringify(result));
+      else console.error(error);
+    });
+    return receipt;
   };
 
   const getSignatureParameters = signature => {
@@ -247,12 +225,21 @@ function App() {
           <button onClick={() => increase()} size="small">
             Increase Counter by 1
           </button>
-          <div>Transfer Token</div>
+          <div>Meta Token</div>
           <button onClick={() => normalTransfer()} size="small">
             Normal Transfer
           </button>
-          <button onClick={() => transfer()} size="small">
-            Transfer
+          {""}
+          <button onClick={() => metaTransfer()} size="small">
+            Meta Transfer
+          </button>
+          {""}
+          <button onClick={() => metaApprove()} size="small">
+            Meta Approve
+          </button>
+          {""}
+          <button onClick={() => metaTransferFrom()} size="small">
+            Meta TransferFrom
           </button>
         </React.Fragment>
       )}

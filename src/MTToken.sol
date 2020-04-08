@@ -327,7 +327,7 @@ contract ERC20 is Context, IERC20 {
 
     mapping(address => uint256) private _balances;
 
-    mapping(address => mapping(address => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) internal _allowances;
 
     uint256 private _totalSupply;
 
@@ -838,5 +838,64 @@ contract MetaToken is ERC20, ERC20Detailed, EIP712MetaTransaction {
 
     function mint(uint256 supply) public {
         _mint(msg.sender, supply);
+    }
+
+    function metaApprove(address spender, uint256 amount)
+        public
+        returns (bool)
+    {
+        _approve(msgSender(), spender, amount);
+        return true;
+    }
+
+    function metaDecreaseAllowance(address spender, uint256 subtractedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            msgSender(),
+            spender,
+            _allowances[msgSender()][spender].sub(
+                subtractedValue,
+                "ERC20: decreased allowance below zero"
+            )
+        );
+        return true;
+    }
+
+    function increaseAllowance(address spender, uint256 addedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            msgSender(),
+            spender,
+            _allowances[msgSender()][spender].add(addedValue)
+        );
+        return true;
+    }
+
+    function metaTransferFrom(address sender, address recipient, uint256 amount)
+        public
+        returns (bool)
+    {
+        _transfer(sender, recipient, amount);
+        _approve(
+            sender,
+            msgSender(),
+            _allowances[sender][msgSender()].sub(
+                amount,
+                "ERC20: transfer amount exceeds allowance"
+            )
+        );
+        return true;
+    }
+
+    function metaTransfer(address recipient, uint256 amount)
+        public
+        returns (bool)
+    {
+        _transfer(msgSender(), recipient, amount);
+        return true;
     }
 }
