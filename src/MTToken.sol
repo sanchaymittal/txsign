@@ -1,7 +1,7 @@
-
 // File: @openzeppelin/contracts/GSN/Context.sol
 
-pragma solidity >=0.4.21 <0.7.0;
+pragma solidity ^0.5.0;
+
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -16,7 +16,8 @@ pragma solidity >=0.4.21 <0.7.0;
 contract Context {
     // Empty internal constructor, to prevent people from mistakenly deploying
     // an instance of this contract, which should be used via inheritance.
-    constructor () internal { }
+    constructor() internal {}
+
     // solhint-disable-previous-line no-empty-blocks
 
     function _msgSender() internal view returns (address payable) {
@@ -31,7 +32,8 @@ contract Context {
 
 // File: @openzeppelin/contracts/token/ERC20/IERC20.sol
 
-pragma solidity >=0.4.21 <0.7.0;
+pragma solidity ^0.5.0;
+
 
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP. Does not include
@@ -55,7 +57,9 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
 
     /**
      * @dev Returns the remaining number of tokens that `spender` will be
@@ -64,7 +68,10 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender) external view returns (uint256);
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -91,7 +98,9 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount)
+        external
+        returns (bool);
 
     /**
      * @dev Emitted when `value` tokens are moved from one account (`from`) to
@@ -105,12 +114,17 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }
 
 // File: @openzeppelin/contracts/math/SafeMath.sol
 
-pragma solidity >=0.4.21 <0.7.0;
+pragma solidity ^0.5.0;
+
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -166,7 +180,11 @@ library SafeMath {
      *
      * _Available since v2.4.0._
      */
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function sub(uint256 a, uint256 b, string memory errorMessage)
+        internal
+        pure
+        returns (uint256)
+    {
         require(b <= a, errorMessage);
         uint256 c = a - b;
 
@@ -224,7 +242,11 @@ library SafeMath {
      *
      * _Available since v2.4.0._
      */
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function div(uint256 a, uint256 b, string memory errorMessage)
+        internal
+        pure
+        returns (uint256)
+    {
         // Solidity only automatically asserts when dividing by 0
         require(b > 0, errorMessage);
         uint256 c = a / b;
@@ -261,7 +283,11 @@ library SafeMath {
      *
      * _Available since v2.4.0._
      */
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function mod(uint256 a, uint256 b, string memory errorMessage)
+        internal
+        pure
+        returns (uint256)
+    {
         require(b != 0, errorMessage);
         return a % b;
     }
@@ -269,9 +295,7 @@ library SafeMath {
 
 // File: @openzeppelin/contracts/token/ERC20/ERC20.sol
 
-pragma solidity >=0.4.21 <0.7.0;
-
-
+pragma solidity ^0.5.0;
 
 
 /**
@@ -301,9 +325,9 @@ pragma solidity >=0.4.21 <0.7.0;
 contract ERC20 is Context, IERC20 {
     using SafeMath for uint256;
 
-    mapping (address => uint256) private _balances;
+    mapping(address => uint256) private _balances;
 
-    mapping (address => mapping (address => uint256)) internal _allowances;
+    mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
 
@@ -337,7 +361,11 @@ contract ERC20 is Context, IERC20 {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view returns (uint256) {
+    function allowance(address owner, address spender)
+        public
+        view
+        returns (uint256)
+    {
         return _allowances[owner][spender];
     }
 
@@ -365,9 +393,19 @@ contract ERC20 is Context, IERC20 {
      * - the caller must have allowance for `sender`'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount)
+        public
+        returns (bool)
+    {
         _transfer(sender, recipient, amount);
-        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        _approve(
+            sender,
+            _msgSender(),
+            _allowances[sender][_msgSender()].sub(
+                amount,
+                "ERC20: transfer amount exceeds allowance"
+            )
+        );
         return true;
     }
 
@@ -383,8 +421,15 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
+    function increaseAllowance(address spender, uint256 addedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            _msgSender(),
+            spender,
+            _allowances[_msgSender()][spender].add(addedValue)
+        );
         return true;
     }
 
@@ -402,8 +447,18 @@ contract ERC20 is Context, IERC20 {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
+    function decreaseAllowance(address spender, uint256 subtractedValue)
+        public
+        returns (bool)
+    {
+        _approve(
+            _msgSender(),
+            spender,
+            _allowances[_msgSender()][spender].sub(
+                subtractedValue,
+                "ERC20: decreased allowance below zero"
+            )
+        );
         return true;
     }
 
@@ -421,11 +476,16 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-    function _transfer(address sender, address recipient, uint256 amount) internal {
+    function _transfer(address sender, address recipient, uint256 amount)
+        internal
+    {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[sender] = _balances[sender].sub(
+            amount,
+            "ERC20: transfer amount exceeds balance"
+        );
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
@@ -461,7 +521,10 @@ contract ERC20 is Context, IERC20 {
     function _burn(address account, uint256 amount) internal {
         require(account != address(0), "ERC20: burn from the zero address");
 
-        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
+        _balances[account] = _balances[account].sub(
+            amount,
+            "ERC20: burn amount exceeds balance"
+        );
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
     }
@@ -495,13 +558,20 @@ contract ERC20 is Context, IERC20 {
      */
     function _burnFrom(address account, uint256 amount) internal {
         _burn(account, amount);
-        _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "ERC20: burn amount exceeds allowance"));
+        _approve(
+            account,
+            _msgSender(),
+            _allowances[account][_msgSender()].sub(
+                amount,
+                "ERC20: burn amount exceeds allowance"
+            )
+        );
     }
 }
 
 // File: @openzeppelin/contracts/token/ERC20/ERC20Detailed.sol
 
-pragma solidity >=0.4.21 <0.7.0;
+pragma solidity ^0.5.0;
 
 
 /**
@@ -517,7 +587,9 @@ contract ERC20Detailed is IERC20 {
      * these values are immutable: they can only be set once during
      * construction.
      */
-    constructor (string memory name, string memory symbol, uint8 decimals) public {
+    constructor(string memory name, string memory symbol, uint8 decimals)
+        public
+    {
         _name = name;
         _symbol = symbol;
         _decimals = decimals;
@@ -555,23 +627,174 @@ contract ERC20Detailed is IERC20 {
     }
 }
 
-// File: contracts/MTToken.sol
-
-pragma solidity >=0.4.21 <0.7.0;
-
+// File: MetaToken.sol
+pragma solidity ^0.5.13;
 
 
-contract MetaToken is ERC20, ERC20Detailed{
-    
-    uint256 public initialSupply = 100000000000000000000;
-    
-    constructor() ERC20Detailed("META", "MT", 18) public {
-        _mint(msg.sender, initialSupply);
+contract EIP712Base {
+    struct EIP712Domain {
+        string name;
+        string version;
+        uint256 chainId;
+        address verifyingContract;
     }
-    function msgSender() internal view returns(address sender) {
-        if(msg.sender == address(this)) {
+
+    bytes32 internal constant EIP712_DOMAIN_TYPEHASH = keccak256(
+        bytes(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        )
+    );
+
+    bytes32 internal domainSeperator;
+
+    constructor(string memory name, string memory version) public {
+        domainSeperator = keccak256(
+            abi.encode(
+                EIP712_DOMAIN_TYPEHASH,
+                keccak256(bytes(name)),
+                keccak256(bytes(version)),
+                getChainID(),
+                address(this)
+            )
+        );
+    }
+
+    function getChainID() internal pure returns (uint256 id) {
+        assembly {
+            id := 15001
+        }
+    }
+
+    function getDomainSeperator() private view returns (bytes32) {
+        return domainSeperator;
+    }
+
+    /**
+     * Accept message hash and returns hash message in EIP712 compatible form
+     * So that it can be used to recover signer from signature signed using EIP712 formatted data
+     * https://eips.ethereum.org/EIPS/eip-712
+     * "\\x19" makes the encoding deterministic
+     * "\\x01" is the version byte to make it compatible to EIP-191
+     */
+    function toTypedMessageHash(bytes32 messageHash)
+        internal
+        view
+        returns (bytes32)
+    {
+        return
+            keccak256(
+                abi.encodePacked("\x19\x01", getDomainSeperator(), messageHash)
+            );
+    }
+}
+pragma solidity ^0.5.13;
+
+
+// pragma experimental ABIEncoderV2;
+
+contract EIP712MetaTransaction is EIP712Base {
+    using SafeMath for uint256;
+    bytes32 private constant META_TRANSACTION_TYPEHASH = keccak256(
+        bytes(
+            "MetaTransaction(uint256 nonce,address from,bytes functionSignature)"
+        )
+    );
+
+    event MetaTransactionExecuted(
+        address userAddress,
+        address payable relayerAddress,
+        bytes functionSignature
+    );
+    mapping(address => uint256) nonces;
+
+    /*
+     * Meta transaction structure.
+     * No point of including value field here as if user is doing value transfer then he has the funds to pay for gas
+     * He should call the desired function directly in that case.
+     */
+    struct MetaTransaction {
+        uint256 nonce;
+        address from;
+        bytes functionSignature;
+    }
+
+    constructor(string memory name, string memory version)
+        public
+        EIP712Base(name, version)
+    {}
+
+    function executeMetaTransaction(
+        address userAddress,
+        bytes memory functionSignature,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV
+    ) public payable returns (bytes memory) {
+        MetaTransaction memory metaTx = MetaTransaction({
+            nonce: nonces[userAddress],
+            from: userAddress,
+            functionSignature: functionSignature
+        });
+        require(
+            verify(userAddress, metaTx, sigR, sigS, sigV),
+            "Signer and signature do not match"
+        );
+        // Append userAddress and relayer address at the end to extract it from calling context
+        (bool success, bytes memory returnData) = address(this).call(
+            abi.encodePacked(functionSignature, userAddress, msg.sender)
+        );
+
+        require(success, "Function call not successfull");
+        nonces[userAddress] = nonces[userAddress].add(1);
+        emit MetaTransactionExecuted(
+            userAddress,
+            msg.sender,
+            functionSignature
+        );
+        return returnData;
+    }
+
+    function hashMetaTransaction(MetaTransaction memory metaTx)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return
+            keccak256(
+                abi.encode(
+                    META_TRANSACTION_TYPEHASH,
+                    metaTx.nonce,
+                    metaTx.from,
+                    keccak256(metaTx.functionSignature)
+                )
+            );
+    }
+
+    function getNonce(address user) public view returns (uint256 nonce) {
+        nonce = nonces[user];
+    }
+
+    function verify(
+        address signer,
+        MetaTransaction memory metaTx,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV
+    ) internal view returns (bool) {
+        return
+            signer ==
+            ecrecover(
+                toTypedMessageHash(hashMetaTransaction(metaTx)),
+                sigV,
+                sigR,
+                sigS
+            );
+    }
+
+    function msgSender() internal view returns (address sender) {
+        if (msg.sender == address(this)) {
             bytes20 userAddress;
-            // bytes memory data = msg.data;
+            bytes memory data = msg.data;
             uint256 dataLength = msg.data.length;
             assembly {
                 calldatacopy(0x0, sub(dataLength, 40), sub(dataLength, 20))
@@ -582,15 +805,38 @@ contract MetaToken is ERC20, ERC20Detailed{
             sender = msg.sender;
         }
     }
-    
-    function metaApprove(address spender, uint256 amount) public returns (bool) {
-        _approve(msgSender(), spender, amount);
-        return true;
+
+    function msgRelayer() internal view returns (address relayer) {
+        if (msg.sender == address(this)) {
+            bytes20 relayerAddress;
+            bytes memory data = msg.data;
+            uint256 dataLength = msg.data.length;
+            assembly {
+                calldatacopy(0x0, sub(dataLength, 20), dataLength)
+                relayerAddress := mload(0x0)
+            }
+            relayer = address(uint160(relayerAddress));
+        }
     }
-    
-    function metaTransferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
-        _transfer(sender, recipient, amount);
-        _approve(sender, msgSender(), _allowances[sender][msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
-        return true;
+
+    // To recieve ether in contract
+    function() external payable {}
+}
+pragma solidity >=0.4.21 <0.7.0;
+
+
+contract MetaToken is ERC20, ERC20Detailed, EIP712MetaTransaction {
+    uint256 public initialSupply = 100000000000000000000;
+
+    constructor()
+        public
+        ERC20Detailed("META", "MT", 18)
+        EIP712MetaTransaction("MetaToken", "1")
+    {
+        _mint(msg.sender, initialSupply);
+    }
+
+    function mint(uint256 supply) public {
+        _mint(msg.sender, supply);
     }
 }
