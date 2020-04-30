@@ -1,134 +1,104 @@
-// client/src/App.js
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import Biconomy from "@biconomy/mexa";
-import abi from "./MTToken.json";
-import counterJSON from "./SignTest.json";
+
+const mana = require("./FakeMana.json");
+const Web3 = require("web3");
+
 let sigUtil = require("eth-sig-util");
 
-function App() {
-  const Web3 = require("web3");
+const contractAddress = "0x2A3df21E612d30Ac0CD63C3F80E1eB583A4744cC";   // Please add your deployed contract address here
+const biconomyAPIKey = 'ikQjlEoSU.ee81d9e3-f295-4ec7-8415-4f3d48b298ce';  // add your api  key from the dashboard
 
-  const domainType = [
-    { name: "name", type: "string" },
-    { name: "version", type: "string" },
-    { name: "chainId", type: "uint256" },
-    { name: "verifyingContract", type: "address" }
-  ];
+const parentChainId = '1'; // chain id of the network tx is signed on
+const maticProvider = 'https://testnetv3.matic.network'
 
-  const metaTransactionType = [
-    { name: "nonce", type: "uint256" },
-    { name: "from", type: "address" },
-    { name: "functionSignature", type: "bytes" }
-  ];
+const domainType = [
+  { name: "name", type: "string" },
+  { name: "version", type: "string" },
+  { name: "chainId", type: "uint256" },
+  { name: "verifyingContract", type: "address" }
+];
 
-  let domainData = {
-    name: "MetaToken",
-    version: "1",
-    chainId: "3",
-    verifyingContract: "0x398da9088fecAe7C38CE76d98b09d08c9aD38B2E"
-  };
-  // const rpcURL = ;
-  // const web3 = new Web3(rpcURL);
+const metaTransactionType = [
+  { name: "nonce", type: "uint256" },
+  { name: "from", type: "address" },
+  { name: "functionSignature", type: "bytes" }
+];
 
-  window.ethereum.enable().catch(error => {
-    console.log(error);
+let domainData = {
+  name: "FAKEMana",
+  version: "1",
+  chainId: parentChainId,
+  verifyingContract: contractAddress
+};
+
+window.ethereum.enable().catch(error => {
+  console.log(error);
+});
+
+const web3 = new Web3(window.ethereum);
+const biconomy = new Biconomy(
+ new Web3.providers.HttpProvider(maticProvider),
+  {
+    apiKey: biconomyAPIKey,   
+    debug: true
+  }
+);
+const getWeb3 = new Web3(biconomy);
+
+biconomy
+  .onEvent(biconomy.READY, () => {
+    // Initialize your dapp here like getting user accounts etc
+    console.log("Mexa is Ready");
+  })
+  .onEvent(biconomy.ERROR, (error, message) => {
+    // Handle error while initializing mexa
+    console.error(error);
   });
 
-  const web3 = new Web3(window.ethereum);
-  const biconomy = new Biconomy(
-    new Web3.providers.HttpProvider("https://testnetv3.matic.network"),
-    {
-      dappId: "5e82f9056cf1a06763b686e4",
-      apiKey: "yhgD9_k2A.a88e1bb4-056c-4bb0-ac52-5d917ce8c7bc",
-      debug: true
-    }
-  );
+const contract = new getWeb3.eth.Contract(mana, contractAddress);
+const amount = "1000000000000000000";
+const sender = "0x75e4DD0587663Fce5B2D9aF7fbED3AC54342d3dB";
+const recipient = "0xBDC6bb454C62E64f13FA2876F78cdAfA20089204"; 
+const spender = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5";
 
-  const getWeb3 = new Web3(biconomy);
+const metaTransfer = async () => {
+  const accounts = await web3.eth.getAccounts();
+  let userAddress = accounts[0];
+  console.log(await contract.methods.balanceOf(userAddress).call())
+  let functionSignature = contract.methods
+    .transfer(recipient, amount)
+    .encodeABI();
+  executeMetaTransaction(functionSignature);
+};
 
-  biconomy
-    .onEvent(biconomy.READY, () => {
-      // Initialize your dapp here like getting user accounts etc
-      console.log("Mexa is Ready");
-    })
-    .onEvent(biconomy.ERROR, (error, message) => {
-      // Handle error while initializing mexa
-    });
+const metaApprove = async () => {
+  const accounts = await web3.eth.getAccounts();
+  let userAddress = accounts[0];
+  console.log(await contract.methods.balanceOf(userAddress).call())
+  let functionSignature = contract.methods
+    .approve(spender, amount)
+    .encodeABI();
+  executeMetaTransaction(functionSignature);
+};
 
-  const [counterInstance, setCounterInstance] = useState(undefined);
-  const [selectedAddress, setSelectedAddress] = useState("");
-  const [count, setCount] = useState(0);
-  const metaTokenAddress = "0x398da9088fecAe7C38CE76d98b09d08c9aD38B2E";
-  const contract = new getWeb3.eth.Contract(abi, metaTokenAddress);
-  const amount = "1000000000000000000";
-  const recipient = "0x5C66D24105D1d5F0E712B47C75c8ed6b6a00c3C5";
-  const account = async () => {
-    const accounts = await web3.eth.getAccounts();
-    setSelectedAddress(accounts);
-  };
+const metaTransferFrom = async () => {
+  const accounts = await web3.eth.getAccounts();
+  let userAddress = accounts[0];
+  console.log(await contract.methods.balanceOf(userAddress).call())
+  let functionSignature = contract.methods
+    .transferFrom(sender,recipient, amount)
+    .encodeABI();
+  executeMetaTransaction(functionSignature); 
+};
 
-  if (!counterInstance) {
-    const contractAddress = "0xc766a047613e308121f5233a0d3df385aafc3f29";
-    const instance = new getWeb3.eth.Contract(counterJSON, contractAddress);
-    setCounterInstance(instance);
-  }
-
-  const getCount = useCallback(async () => {
-    if (counterInstance) {
-      // Get the value from the contract to prove it worked.
-      const response = await counterInstance.methods.value().call();
-      // Update state with the result.
-      setCount(response);
-    }
-  }, [counterInstance]);
-
-  useEffect(() => {
-    getCount();
-  }, [counterInstance, getCount, account]);
-
-  const increase = async () => {
-    const accounts = await web3.eth.getAccounts();
-    await signTransaction(accounts[0]).then(async () => {
-      await counterInstance.methods.increase().send({ from: accounts[0] });
-    });
-    getCount();
-  };
-
-  const normalTransfer = async () => {
-    const accounts = await web3.eth.getAccounts();
-    let userAddress = accounts[0];
-    const contractTest = new web3.eth.Contract(abi, metaTokenAddress);
-    await contractTest.methods
-      .transfer(recipient, amount)
-      .send({ from: userAddress });
-  };
-
-  const metaTransfer = async () => {
-    let functionSignature = contract.methods
-      .metaTransfer(recipient, amount)
-      .encodeABI();
-    executeMetaTransaction(functionSignature);
-  };
-
-  const metaApprove = async () => {
-    const accounts = await web3.eth.getAccounts();
-    let userAddress = accounts[0];
-    let functionSignature = contract.methods
-      .metaApprove(userAddress, amount)
-      .encodeABI();
-    executeMetaTransaction(functionSignature);
-  };
-
-  const metaTransferFrom = async () => {
-    const accounts = await web3.eth.getAccounts();
-    let userAddress = accounts[0];
-    let functionSignature = contract.methods
-      .metaTransferFrom(userAddress, recipient, amount)
-      .encodeABI();
-    executeMetaTransaction(functionSignature);
-  };
-
-  const executeMetaTransaction = async functionSignature => {
+const allowance = async () => {
+  let functionSignature = await contract.methods
+    .allowance(sender,spender)
+    .call();
+    console.log(functionSignature);
+}
+const executeMetaTransaction = async functionSignature => {
     const accounts = await web3.eth.getAccounts();
     let userAddress = accounts[0];
     let nonce = await contract.methods.getNonce(userAddress).call();
@@ -148,7 +118,6 @@ function App() {
       message: message
     });
     console.log(domainData);
-    console.log();
     console.log(userAddress)
     web3.eth.currentProvider.send(
       {
@@ -157,9 +126,12 @@ function App() {
         method: "eth_signTypedData_v4",
         params: [userAddress, dataToSign]
       },
-      function(error, response) {
+      async function(error, response) {
         console.info(`User signature is ${response.result}`);
+
         let { r, s, v } = getSignatureParameters(response.result);
+				
+				// logging output
         console.log(userAddress);
         console.log(JSON.stringify(message));
         console.log(message);
@@ -170,23 +142,14 @@ function App() {
           sig: response.result
         });
         console.log(`Recovered ${recovered}`);
-        let tx = contract.methods
+        let tx = await contract.methods
           .executeMetaTransaction(userAddress, functionSignature, r, s, v)
           .send({
             from: userAddress
           });
-        console.log(tx);
+          console.log(tx, await contract.methods.balanceOf(userAddress).call())
       }
     );
-  };
-
-  const signTransaction = async from => {
-    const data = "Hi you are incrementing thevalue";
-    const receipt = await web3.eth.sign(data, from, function(error, result) {
-      if (!error) console.log(JSON.stringify(result));
-      else console.error(error);
-    });
-    return receipt;
   };
 
   const getSignatureParameters = signature => {
@@ -207,42 +170,27 @@ function App() {
     };
   };
 
+  // client/src/App.js
+
+function App() {
   return (
     <div>
-      <h3> Counter counterInstance </h3>
-      {!counterInstance && (
+      <h3> MetaToken </h3>
         <React.Fragment>
-          <div>Contract Instance or network not loaded.</div>
-        </React.Fragment>
-      )}
-      {counterInstance && (
-        <React.Fragment>
-          <div>
-            <div>Counter Value:</div>
-            <div>{count}</div>
-          </div>
-          <div>Counter Actions</div>
-          <button onClick={() => increase()} size="small">
-            Increase Counter by 1
-          </button>
-          <div>Meta Token</div>
-          <button onClick={() => normalTransfer()} size="small">
-            Normal Transfer
-          </button>
           {""}
           <button onClick={() => metaTransfer()} size="small">
-            Meta Transfer
+            Transfer
           </button>
-          {""}
           <button onClick={() => metaApprove()} size="small">
-            Meta Approve
+            Approve
           </button>
-          {""}
           <button onClick={() => metaTransferFrom()} size="small">
-            Meta TransferFrom
+            Transfer From
+          </button>
+          <button onClick={() => allowance()} size="small">
+            Allowance
           </button>
         </React.Fragment>
-      )}
     </div>
   );
 }

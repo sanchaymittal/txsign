@@ -1,11 +1,10 @@
 {
-  "name": "client",
+  "name": "txsigndemo",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@biconomy/mexa": "file:../mexa-sdk",
-    "@maticnetwork/maticjs": "^2.0.0-beta.8",
-    "@maticnetwork/meta": "^1.0.3",
+    "@biconomy/mexa": "^1.5.7",
+    "@openzeppelin/contracts": "^3.0.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -13,7 +12,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
-    "web3": "^1.2.6"
+    "solc": "^0.6.0",
+    "truffle-hdwallet-provider": "^1.0.17"
   },
   "scripts": {
     "start": "react-scripts start",
